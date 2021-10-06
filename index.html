@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="UTF-8">
+        <title>Bankema&reg Provenance Module - Version 0.1</title>
+        <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script language="javascript" type="text/javascript" src="web3.min.js"></script>
+        <script language="javascript" type="text/javascript" src="collection_abi.js"></script>
+        <script language="javascript" type="text/javascript" src="object_abi.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="main.css">
+        <link rel="shortcut icon" href="">
+    </head>
+
+<body>
+    <table id="collectionTable" style="border: 0px; width:100%">
+        <tr>
+            <td class=nbbl style="width:10%">Collection Name</td> 
+            <td class=nb id="collectionList" style="width:12%"></td>
+            <td class=nbbl style="width:10%">ObjectValue</td>
+            <td class=bp id="objectValueBalance" style="width:12%; background-color: White"></td>
+            <td class=nbbl>Last Price</td>
+            <td class=bp id="lastPrice" style="background-color: White"></td>
+            <td class=nbbl># of Objects</td> 
+            <td id="numberObjects" class=b style="background-color: White"></td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <div id="DisplayPortfolio" style="display:block">
+
+        <hr>
+
+        <div id="objectsDiv" class="scrollit">
+            <table id="objectsTable" style="width:176%">
+                <tr>
+                    <td class="bb" style="width:5%">UID</td> 
+                    <td class=bb style="width:15%">Description</td>
+                    <td class=bb style="width:10%">Object Value</td>                        
+                    <td class=bb style="width:10%">Last Price</td>
+                    <td class=bb style="width:10%">Certificate Date</td>                    
+                    <td class=bb style="width:15%">Document CID</td>
+                    <td class=bb style="width:15%">Document Hash</td>
+                    <td class=bb style="width:15%">Photo CID</td>
+                    <td class=bb style="width:15%">Photo Hash</td>
+                </tr>
+            </table>
+        </div>
+
+        <hr>
+
+        <table id="addObjectTable" class=adminDisplay style="width:100%">
+            <tr>
+                <td class=nbbl style="width:10%">Object UIC</td>    
+                <td class=nbl style="width:10%"><input id="objectUIC" type="text"></td>
+                <td class=nbl style="width:10%"><button id="addObjectButton" onclick="ddObjectClick()">Add Object</button></td>
+                <td class=nbbl style="width:8%">Description</td>  
+                <td class=nbl style="width:10%"><input id="description" type="text"></td>
+                <td class=nbbl style="width:8%">Value</td>
+                <td class=nbl style="width:8%"><input id="objectValue" class=b type="date"></td>            
+                <td class=nbbl style="width:8%">lastPrice</td>
+                <td class=nbl style="width:10%"><input id="lastPrice" type="text"></td>
+                <td class=nbbl style="width:8%">Document CID</td>
+                <td class=nbl style="width:10%"><input id="docCID" type="text"></td>
+                <td class=nbbl style="width:8%">Document Hash</td>
+                <td class=nbl style="width:10%"><input id="docHash" type="text"></td>
+                <td class=nbbl style="width:8%">Photo CID</td>
+                <td class=nbl style="width:10%"><input id="photoCID" type="text"></td>
+                <td class=nbbl style="width:8%">Photo Hash</td>
+                <td class=nbl style="width:10%"><input id="photoHash" type="text"></td>
+            </tr>
+
+        <hr class=adminDisplay>
+
+    <img id="loader" src="waiting-icon-gif-20.jpg">
+
+    <script>
+
+    $("#loader").hide();
+
+$( document ).ready(function() {
+            m = detectMetaMask()
+            if(m) {
+                $('#metaicon').removeClass('meta-gray')
+                $('#metaicon').addClass('meta-normal')
+                $('#enableMetamask').attr('disabled',false)
+                // connect() 
+            } else {
+                $('#enableMetamask').attr('disabled',true)
+                $('#metaicon').removeClass('meta-normal')
+                $('#metaicon').addClass('meta-gray')
+            }
+$('#enableMetamask').click(function() {
+                connect()
+            });
+try {            
+                web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+            } catch (error) {
+                alert(error)
+            }            
+            
+            //Fetch Value from Smart Contract
+            getValue()
+        })
+
+    const collectionContract = web3.eth.contract(collectionABI);
+    const collectionAddress = '0xaff7fA15020997580802f778d0759D89c925F3D8'
+    const myCollection = collectionContract.at(collectionAddress);
+
+    var objectContract = web3.eth.contract(objectABI);
+    var objectAddress = '0xaDcd73552fc741d326983BAB9ac97d30f341f2d7'
+    var myObject = objectContract.at(objectAddress);
+
+    var numberOfObjects = 0;
+    var totalObjectValue = 0;
+    var totalLastPrice = 0;
+
+    function formattedDate(fDate = new Date()){
+        let day = String(fDate.getDate());
+        let month = String(fDate.getMonth() + 1);
+        var year = String(fDate.getFullYear());
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return `${year}-${month}-${day}`;
+        }
+
+    function cleanDate(fDate = new Date()){
+        let day = String(fDate.getDate());
+        let month = String(fDate.getMonth() + 1);
+        var year = String(fDate.getFullYear());
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return `${day}/${month}/${year}`;
+        }
+
+    function cleanDateTime(fDate = new Date()){
+        let day = String(fDate.getDate());
+        let month = String(fDate.getMonth() + 1);
+        let year = String(fDate.getFullYear());
+        let hour = String(fDate.getHours());
+        if (hour.length==1) hour = "0"+hour;
+        let minutes = String(fDate.getMinutes());
+        if (minutes.length==1) minutes = "0"+minutes;
+        let seconds = String(fDate.getSeconds());
+        if (seconds.length==1) seconds = "0"+seconds;
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return `${day}/${month}/${year} ${hour}:${minutes}:${seconds}`;
+        }
+
+    // Update Collection data
+    function updateCollection() {
+
+        myCollection.getNumberObjects (function(errGNO, resGNO) {
+
+            // Display portfolio header
+            objectHeader();
+
+            $("#loader").show();
+            if (!errGNO) {
+                numberOfObjects = resGNO;
+                console.log(resGNO);
+                var oTable = document.getElementById("objectTable");
+                
+                var headerCell = oTable.rows[0].cells[0]; 
+                $(headerCell).css({"textAlign":"left","paddingLeft":"1em"});
+                // Initialize number of Objects to 0
+                $(headerCell).html("Object UID (0)");
+
+                // initialize portfolio totals
+                totalObjectValue = 0;
+                totalLastPrice = 0;
+
+                for (var i=0;i<numberOfObjects;i++) { 
+                    myCollection.getObjectInfo(i, function(errGOI, resGOI) {
+                        console.log(resGOI);
+                        if (!errGOI) {
+                            var row = oTable.insertRow(0);
+                            $(row).css({"background-color":"white"});
+
+                            var cell1 = row.insertCell(0);
+                            var cell2 = row.insertCell(1);
+                            var cell3 = row.insertCell(2);
+                            var cell4 = row.insertCell(3);
+                            var cell5 = row.insertCell(4);
+                            var cell6 = row.insertCell(5);
+                            var cell7 = row.insertCell(6);
+                            var cell8 = row.insertCell(7);
+                            var cell9 = row.insertCell(8);
+
+                            // UID
+                            $(cell1).html(web3.toAscii(resGOI[0]));
+                            $(cell1).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Description
+                            $(cell2).html(web3.toAscii(resGOI[1]));
+                            $(cell2).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Obect Value
+                            $(cell3).html(web3.toAscii(resGOI[2]));
+                            var objectValue = resGOI[2]/1000000;
+                            $(cell3).html(Intl.NumberFormat('en-UK', {minimumFractionDigits: 2,maximumFractionDigits: 2}).format(objectValue)).css({"textAlign":"right","paddingRight":"1em"});
+                            $(cell3).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Last Price
+                            $(cell4).html(web3.toAscii(resGOI[3]));
+                            var lastPrice = resGOI[3]/1000000;
+                            $(cell4).html(Intl.NumberFormat('en-UK', {minimumFractionDigits: 2,maximumFractionDigits: 2}).format(lastPrice)).css({"textAlign":"right","paddingRight":"1em"});
+                            $(cell4).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Certificate Date
+                            var certificateDate = new Date(resGOI[4]*1000);
+                            $(cell5).html(cleanDate(certificateDate));
+
+                            // Document CID
+                            $(cell6).html(web3.toAscii(resGOI[5]));
+                            $(cell6).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Document Hash
+                            $(cell7).html(web3.toAscii(resGOI[6]));
+                            $(cell7).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Photo CID
+                            $(cell8).html(web3.toAscii(resGOI[7]));
+                            $(cell8).css({"textAlign":"left","paddingLeft":"1em"});
+
+                            // Document Hash
+                            $(cell9).html(web3.toAscii(resGOI[8]));
+                            $(cell9).css({"textAlign":"left","paddingLeft":"1em"});
+                            } // if (!errGOI) {
+
+                    }); // myCollection.getObjectInfo(i, function(errGOI, resGOI)
+                } // for (var i=0;i<numberOfObjects;i++) { 
+
+                $("#loader").hide();
+            } // if (!errGNO) {
+        }); // myCollection.getNumberObjects (function(errGNO, resGNO)
+
+    } // function updateCollection() {
+
+    function convertDate(dtString){
+        myDate=dtString.split("-");
+        var myMonth = myDate[1];
+        var myDay = myDate[2];
+        newDate = parseInt(new Date(myDate[0]+","+myMonth.toString()+","+myDay.toString()+" 22:00:00").getTime() / 1000).toFixed(0);
+
+        return newDate;
+        }
+
+    function convertHTMLtoVal(htmlString){
+        var $value = htmlString;
+        $value=$value.replace(/[^\/|\/a-zA-Z0-9 ]/g, "");
+        $value=$value.split(' ').join('-');
+
+        return $value;
+        }
+
+    function csvToHtml(z){  
+        for (var j=0; j<z.length;++j) console.log("j; "+j+" : "+z[j]+" "+z.charCodeAt(j))
+        // I used the line above to find how the line ends were actually represented: turned out to be  Ascii 13 and 10 hence next line
+        var newline=String.fromCharCode(13)+String.fromCharCode(10)
+
+        var R = /,/g
+        var T=z.replace(R,"</td><td>");  // trouble with jscript replace is that is not normally global, so need regexp with 'g'
+        T=T.replace(RegExp(newline,"g"),"</td></tr><tr><td>");
+        T="<table><tr><td>"+T+"</td></tr></table>"
+        alert(T);
+        }
+        
+
+
+    </script>
+
+</body>
+</html>
