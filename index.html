@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <title>Bankema&reg Provenance Module - Version 0.1</title>
         <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script language="javascript" type="text/javascript" src="web3.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
         <script language="javascript" type="text/javascript" src="collection_abi.js"></script>
         <script language="javascript" type="text/javascript" src="object_abi.js"></script>
 
@@ -79,42 +79,32 @@
 
     $("#loader").hide();
 
-$( document ).ready(function() {
-            m = detectMetaMask()
-            if(m) {
-                $('#metaicon').removeClass('meta-gray')
-                $('#metaicon').addClass('meta-normal')
-                $('#enableMetamask').attr('disabled',false)
-                // connect() 
-            } else {
-                $('#enableMetamask').attr('disabled',true)
-                $('#metaicon').removeClass('meta-normal')
-                $('#metaicon').addClass('meta-gray')
-            }
-$('#enableMetamask').click(function() {
-                connect()
-            });
-try {            
-                web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
-            } catch (error) {
-                alert(error)
-            }            
-            
-            //Fetch Value from Smart Contract
-            getValue()
-        })
+    var collectionContract;
+    var collectionAddress;
+    var myCollection;
 
-    const collectionContract = web3.eth.contract(collectionABI);
-    const collectionAddress = '0xaff7fA15020997580802f778d0759D89c925F3D8'
-    const myCollection = collectionContract.at(collectionAddress);
-
-    var objectContract = web3.eth.contract(objectABI);
-    var objectAddress = '0xaDcd73552fc741d326983BAB9ac97d30f341f2d7'
-    var myObject = objectContract.at(objectAddress);
+    var objectContract;
+    var objectAddress;
+    var myObject;
 
     var numberOfObjects = 0;
     var totalObjectValue = 0;
     var totalLastPrice = 0;
+
+    function startApp() {
+        collectionAddress = '0xaff7fA15020997580802f778d0759D89c925F3D8'
+        myCollection = new web3js.eth.Contract(collectionABI, collectionAddress);
+
+        objectAddress = '0xaDcd73552fc741d326983BAB9ac97d30f341f2d7'
+        myObject = new web3js.eth.Contract(objectABI, objectAddress);
+
+        updateCollection();
+        }
+
+    function getObjectDetails(id) {
+        return myObject.methods.zombies(id).call()
+    }
+
 
     function formattedDate(fDate = new Date()){
         let day = String(fDate.getDate());
@@ -158,90 +148,17 @@ try {
     // Update Collection data
     function updateCollection() {
 
-        myCollection.getNumberObjects (function(errGNO, resGNO) {
+        let collectionCount = myCollection.methods.getNumberObjects().call()
+            .then( function(val) {
+                numberOfObjects = val;
+                console.log("Count:",val);
+                });
+        
+        $("#loader").show();
 
-            // Display portfolio header
-            objectHeader();
+        console.log(numberOfObjects);
 
-            $("#loader").show();
-            if (!errGNO) {
-                numberOfObjects = resGNO;
-                console.log(resGNO);
-                var oTable = document.getElementById("objectTable");
-                
-                var headerCell = oTable.rows[0].cells[0]; 
-                $(headerCell).css({"textAlign":"left","paddingLeft":"1em"});
-                // Initialize number of Objects to 0
-                $(headerCell).html("Object UID (0)");
-
-                // initialize portfolio totals
-                totalObjectValue = 0;
-                totalLastPrice = 0;
-
-                for (var i=0;i<numberOfObjects;i++) { 
-                    myCollection.getObjectInfo(i, function(errGOI, resGOI) {
-                        console.log(resGOI);
-                        if (!errGOI) {
-                            var row = oTable.insertRow(0);
-                            $(row).css({"background-color":"white"});
-
-                            var cell1 = row.insertCell(0);
-                            var cell2 = row.insertCell(1);
-                            var cell3 = row.insertCell(2);
-                            var cell4 = row.insertCell(3);
-                            var cell5 = row.insertCell(4);
-                            var cell6 = row.insertCell(5);
-                            var cell7 = row.insertCell(6);
-                            var cell8 = row.insertCell(7);
-                            var cell9 = row.insertCell(8);
-
-                            // UID
-                            $(cell1).html(web3.toAscii(resGOI[0]));
-                            $(cell1).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Description
-                            $(cell2).html(web3.toAscii(resGOI[1]));
-                            $(cell2).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Obect Value
-                            $(cell3).html(web3.toAscii(resGOI[2]));
-                            var objectValue = resGOI[2]/1000000;
-                            $(cell3).html(Intl.NumberFormat('en-UK', {minimumFractionDigits: 2,maximumFractionDigits: 2}).format(objectValue)).css({"textAlign":"right","paddingRight":"1em"});
-                            $(cell3).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Last Price
-                            $(cell4).html(web3.toAscii(resGOI[3]));
-                            var lastPrice = resGOI[3]/1000000;
-                            $(cell4).html(Intl.NumberFormat('en-UK', {minimumFractionDigits: 2,maximumFractionDigits: 2}).format(lastPrice)).css({"textAlign":"right","paddingRight":"1em"});
-                            $(cell4).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Certificate Date
-                            var certificateDate = new Date(resGOI[4]*1000);
-                            $(cell5).html(cleanDate(certificateDate));
-
-                            // Document CID
-                            $(cell6).html(web3.toAscii(resGOI[5]));
-                            $(cell6).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Document Hash
-                            $(cell7).html(web3.toAscii(resGOI[6]));
-                            $(cell7).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Photo CID
-                            $(cell8).html(web3.toAscii(resGOI[7]));
-                            $(cell8).css({"textAlign":"left","paddingLeft":"1em"});
-
-                            // Document Hash
-                            $(cell9).html(web3.toAscii(resGOI[8]));
-                            $(cell9).css({"textAlign":"left","paddingLeft":"1em"});
-                            } // if (!errGOI) {
-
-                    }); // myCollection.getObjectInfo(i, function(errGOI, resGOI)
-                } // for (var i=0;i<numberOfObjects;i++) { 
-
-                $("#loader").hide();
-            } // if (!errGNO) {
-        }); // myCollection.getNumberObjects (function(errGNO, resGNO)
+        $("#loader").hide();
 
     } // function updateCollection() {
 
@@ -273,8 +190,27 @@ try {
         T="<table><tr><td>"+T+"</td></tr></table>"
         alert(T);
         }
-        
 
+    window.addEventListener('load', function() {
+
+        window.ethereum.enable();
+
+        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+        if (typeof web3 !== 'undefined') {
+            // Use Mist/MetaMask's provider
+            web3js = new Web3(web3.currentProvider);
+        } else {
+            // Handle the case where the user doesn't have Metamask installed
+            // Probably show them a message prompting them to install Metamask
+            // set the provider you want from Web3.providers - Ropesten
+            web3js = new Web3.providers.HttpProvider("http://localhost:3000");
+        }
+
+        web3js.eth.defaultAccount = web3js.eth.accounts[0];
+
+        // Now you can start your app & access web3 freely:
+        startApp()
+      })
 
     </script>
 

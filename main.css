@@ -1,0 +1,152 @@
+body {
+    background-color:#F0F0F0;
+    padding: 1em;
+    font-family: 'Arial';
+    font-size: 14px;
+}
+
+.container {
+    width: 100%;
+    margin-left: 0;
+}
+
+#form {
+    background-color: #FFF;
+    height: 600px;
+    width: 600px;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 0px;
+    text-align:center;
+}
+
+/* Display toggle for admin/users */
+.adminDisplay {
+    display: block;
+}
+
+tr.border_bottom td {
+  border-bottom:1pt solid black;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 10%;
+    top: 10%;
+    width: auto; /* Full width */
+    height: collapse; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 15% from the top and centered */
+    padding: 1px;
+    border: 1px solid #888;
+    width: 90%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.scrollit {
+    overflow-y:scroll;
+    height:200px;
+}
+
+table td input {
+    width: 94%;
+    font-family:    'Arial';
+    font-size:      14px; 
+    text-align:left; 
+}
+
+table td select {
+    width:  100%;
+    border: 1px solid black; 
+    font-family:    'Arial';
+    font-size:      15px; 
+    text-align:left; 
+}
+
+table {border-collapse:collapse; padding-top: 1px}
+.bordered,.b {border:1px solid black}
+.bl {text-align:left; border:1px solid black; padding-left: 1em}
+.bs {border:1px solid black;font-size: 14px}
+.bsp {border:1px solid black;font-size: 14px;text-align:right; padding-right: 1em}
+.nbps {border:0px;font-size: 14px;text-align:right; padding-right: 1em}
+.nbbps {border:0px;font-weight:bold;font-size: 14px;text-align:right; padding-right: 0.5em}
+.nb {border:0px}
+.nbs {border:0px; font-size: 14px}
+.nbl {text-align:left; border:0px; padding-left: 1em}
+.nbb {border:0px;font-weight:bold}
+.nbbl {text-align:left; border:0px;font-weight:bold; padding-left: 1em}
+.nbbp {border:0px;font-weight:bold;text-align:right; padding-right: 1em}
+.nbbps {border:0px;font-weight:bold;text-align:right; font-size: 14px; padding-right: 1em}
+.bb {border:1px solid black;font-weight:bold}
+.bbs {border:1px solid black;font-weight:bold;font-size: 14px}
+.nbb {border:0px;font-weight:bold}
+.nbbs {border:0px;font-weight:bold;font-size: 14px}
+.bold {font-weight:bold}
+.centre {text-align:center}
+.right {text-align:right}
+.bp{border:1px solid black;text-align:right; padding-right: 1em}
+.bbp{border:1px solid black;font-weight:bold;text-align:right; padding-right: 1em}
+
+label, input {
+    margin-left: auto;
+    margin-right: auto;
+    padding:5px 5px 5px 5px;
+}
+
+label {
+    color: #333;
+    text-align: left;
+}
+
+th,button {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+td {
+    border: 1px solid black;
+    width: 200px;
+}
+
+th, td, button {
+    text-align:center;
+}
+
+button {
+    width: 100%;
+    padding: 5px 5px 5px 5px;
+    cursor: pointer;
+}
+
+#loader {
+    width: 100px;
+    display:none;
+}
