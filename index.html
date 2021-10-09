@@ -52,23 +52,31 @@
 
         <table id="addObjectTable" class=adminDisplay style="width:100%">
             <tr>
-                <td class=nbbl style="width:10%">Object UIC</td>    
-                <td class=nbl style="width:10%"><input id="objectUIC" type="text"></td>
                 <td class=nbl style="width:10%"><button id="addObjectButton" onclick="ddObjectClick()">Add Object</button></td>
-                <td class=nbbl style="width:8%">Description</td>  
-                <td class=nbl style="width:10%"><input id="description" type="text"></td>
-                <td class=nbbl style="width:8%">Value</td>
-                <td class=nbl style="width:8%"><input id="objectValue" class=b type="date"></td>            
-                <td class=nbbl style="width:8%">lastPrice</td>
-                <td class=nbl style="width:10%"><input id="lastPrice" type="text"></td>
-                <td class=nbbl style="width:8%">Document CID</td>
-                <td class=nbl style="width:10%"><input id="docCID" type="text"></td>
-                <td class=nbbl style="width:8%">Document Hash</td>
-                <td class=nbl style="width:10%"><input id="docHash" type="text"></td>
-                <td class=nbbl style="width:8%">Photo CID</td>
-                <td class=nbl style="width:10%"><input id="photoCID" type="text"></td>
-                <td class=nbbl style="width:8%">Photo Hash</td>
-                <td class=nbl style="width:10%"><input id="photoHash" type="text"></td>
+                <td class=nbbl style="width:10%">Value</td>
+                <td class=nbl style="width:10%"><input id="objectValue" class=b type="date"></td>            
+                <td class=nbbl style="width:10%">Object UIC</td>    
+                <td class=nbl style="width:20%"><input id="objectUIC" type="text"></td>
+                <td class=nbbl style="width:10%">Description</td>  
+                <td class=nbl style="width:30%"><input id="description" type="text"></td>
+        </tr>
+        <tr>
+                <td class=nbbl></td>
+                <td class=nbbl>lastPrice</td>
+                <td class=nbl><input id="lastPrice" type="text"></td>
+                <td class=nbbl>Document CID</td>
+                <td class=nbl><input id="docCID" type="text"></td>
+                <td class=nbbl>Document Hash</td>
+                <td class=nbl><input id="docHash" type="text"></td>
+        </tr>
+        <tr>
+                <td class=nbbl></td>
+                <td class=nbbl>certificateDate</td>
+                <td class=nbl><input id="certificateDate" type="text"></td>
+                <td class=nbbl>Photo CID</td>
+                <td class=nbl><input id="photoCID" type="text"></td>
+                <td class=nbbl>Photo Hash</td>
+                <td class=nbl><input id="photoHash" type="text"></td>
             </tr>
 
         <hr class=adminDisplay>
@@ -92,19 +100,14 @@
     var totalLastPrice = 0;
 
     function startApp() {
-        collectionAddress = '0xaff7fA15020997580802f778d0759D89c925F3D8'
+        collectionAddress = '0xf71dcc329ca962006631c0B48F0a448B156D4470'
         myCollection = new web3js.eth.Contract(collectionABI, collectionAddress);
 
-        objectAddress = '0xaDcd73552fc741d326983BAB9ac97d30f341f2d7'
-        myObject = new web3js.eth.Contract(objectABI, objectAddress);
+//        objectAddress = '0xfFA0b7783AfdAb942c3fF1952922F23b05a8eF7a'
+//        myObject = new web3js.eth.Contract(objectABI, objectAddress);
 
         updateCollection();
         }
-
-    function getObjectDetails(id) {
-        return myObject.methods.zombies(id).call()
-    }
-
 
     function formattedDate(fDate = new Date()){
         let day = String(fDate.getDate());
@@ -154,6 +157,17 @@
                 console.log("Count:",val);
                 
                 var oTable = document.getElementById("objectsTable");
+
+                // Define len as the total number of rows in oTable
+                var len = oTable.rows.length;
+
+                // Delete all rows apart from the header row 
+                if (len > 1)
+                    for (var i=len-1;i>0;i--)
+                        {
+                        console.log("i: " + i);
+                        oTable.deleteRow(i);
+                        }
                 
                 var headerCell = oTable.rows[0].cells[0]; 
                 $(headerCell).css({"textAlign":"left","paddingLeft":"1em"});
@@ -166,84 +180,88 @@
 
                 for (var i=0;i<numberOfObjects;i++) { 
 
-                    var row = oTable.insertRow(1);
-                    $(row).css({"background-color":"white"});
-
-                    var cell1 = row.insertCell(0);
-                    var cell2 = row.insertCell(1);
-                    var cell3 = row.insertCell(2);
-                    var cell4 = row.insertCell(3);
-                    var cell5 = row.insertCell(4);
-                    var cell6 = row.insertCell(5);
-                    var cell7 = row.insertCell(6);
-                    var cell8 = row.insertCell(7);
-                    var cell9 = row.insertCell(8);
+                    console.log("i:", i);
 
                     let promise1 = myCollection.methods.getObjectInfo(i).call()
                         .then( function(val) {
 
-                            // Assign results from promise to object
-                            object = val;
+                        // Define len1 as the total number of rows in oTable
+                        len1 = oTable.rows.length;
 
-                            // UID
-                            $(cell1).html(web3.toAscii(object[1]));
-                            $(cell1).css({"textAlign":"left","paddingLeft":"1em"});
+                        // Assign results from promise to object
+                        var object = val;
 
-                            // Description
-                            $(cell2).html(web3.toAscii(object[2]));
-                            $(cell2).css({"textAlign":"left","paddingLeft":"1em"});
+                        // Find the sorted row in order of LoanID
+                        var sortInvoiceID = web3.toAscii(object[1]);
+                        var findRow = oTable.rows.length; 
+                        for (var j=oTable.rows.length-1;j>0;j--) 
+                            {
+                            if (oTable.rows[j].cells[0].innerHTML > sortInvoiceID)
+                                findRow = j;
+                            }
 
-                            // Obect Value
-                            $(cell3).html(object[3]);
-                            var objectValue = object[3]/1000000;
-                            $(cell3).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(objectValue)).css({"textAlign":"right","paddingRight":"1em"});
-                            $(cell3).css({"textAlign":"left","paddingLeft":"1em"});
+                        var row = oTable.insertRow(findRow);
+                        $(row).css({"background-color":"white"});
 
-                            // Last Price
-                            $(cell4).html(object[4]);
-                            var lastPrice = object[4]/1000000;
-                            $(cell4).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(lastPrice)).css({"textAlign":"right","paddingRight":"1em"});
-                            $(cell4).css({"textAlign":"left","paddingLeft":"1em"});
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        var cell5 = row.insertCell(4);
+                        var cell6 = row.insertCell(5);
+                        var cell7 = row.insertCell(6);
+                        var cell8 = row.insertCell(7);
+                        var cell9 = row.insertCell(8);
 
-                            // Certificate Date
-                            var certificateDate = new Date(object[5]*1000);
-                            $(cell5).html(cleanDate(certificateDate));
-                            });
+                        console.log("Len:",len1);
 
-                    let promise2 = myCollection.methods.getDocDetails(i).call()
-                        .then( function(val) {
+                        // UID
+                        $(cell1).html(web3.toAscii(object[1]));
+                        $(cell1).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            // Assign results from promise to doc
-                            doc = val;
+                        console.log("UID:",object[1]);
+    
+                        // Description
+                        $(cell2).html(web3.toAscii(object[2]));
+                        $(cell2).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            // Document CID
-                            $(cell6).html(web3.toAscii(doc[0]));
-                            $(cell6).css({"textAlign":"left","paddingLeft":"1em"});
+                        // Obect Value
+                        $(cell3).html(object[3]);
+                        var objectValue = object[3]/1000000;
+                        $(cell3).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(objectValue)).css({"textAlign":"right","paddingRight":"1em"});
+                        $(cell3).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            // Document Hash
-                            $(cell7).html(web3.toAscii(doc[1]));
-                            $(cell7).css({"textAlign":"left","paddingLeft":"1em"});
-                            });
+                        // Last Price
+                        $(cell4).html(object[4]);
+                        var lastPrice = object[4]/1000000;
+                        $(cell4).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(lastPrice)).css({"textAlign":"right","paddingRight":"1em"});
+                        $(cell4).css({"textAlign":"left","paddingLeft":"1em"});
 
-                    let promise3 = myCollection.methods.getPhotoDetails(i).call()
-                        .then( function(val) {
+                        // Certificate Date
+                        var certificateDate = new Date(object[5]*1000);
+                        $(cell5).html(cleanDate(certificateDate));
 
-                            // Assign results from promise to doc
-                            photo = val;
+                        // Document CID
+                        $(cell6).html(web3.toAscii(object[6]));
+                        $(cell6).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            // Photo CID
-                            $(cell8).html(web3.toAscii(photo[0]));
-                            $(cell8).css({"textAlign":"left","paddingLeft":"1em"});
+                        // Document Hash
+                        $(cell7).html(web3.toAscii(object[7]));
+                        $(cell7).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            // Document Hash
-                            $(cell9).html(web3.toAscii(photo[1]));
-                            $(cell9).css({"textAlign":"left","paddingLeft":"1em"});
+                        // Photo CID
+                        $(cell8).html(web3.toAscii(object[8]));
+                        $(cell8).css({"textAlign":"left","paddingLeft":"1em"});
 
-                            });
+                        // Photo Hash
+                        $(cell9).html(web3.toAscii(object[9]));
+                        $(cell9).css({"textAlign":"left","paddingLeft":"1em"});
+
+                        }); // let promise1 = myCollection.methods.getObjectInfo(i).call()
 
                     } // for (var i=0;i<numberOfObjects;i++) { 
 
-                });
+                }); // let collectionCount = myCollection.methods.getNumberObjects().call()
         
         $("#loader").show();
 

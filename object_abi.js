@@ -7,9 +7,9 @@ var objectABI = [
                 "type": "bytes32"
             },
             {
-                "internalType": "bytes32",
+                "internalType": "bytes",
                 "name": "_Desc",
-                "type": "bytes32"
+                "type": "bytes"
             },
             {
                 "internalType": "uint256",
@@ -86,9 +86,9 @@ var objectABI = [
         "name": "getDesc",
         "outputs": [
             {
-                "internalType": "bytes32",
+                "internalType": "bytes",
                 "name": "",
-                "type": "bytes32"
+                "type": "bytes"
             }
         ],
         "stateMutability": "view",

@@ -2,7 +2,7 @@ pragma solidity ^0.7.6;
 
 	contract Object {
 	    bytes32 private UID;
-	    bytes32 private Desc;
+	    bytes private Desc;
 	    uint 	private ObjectValue;
 	    uint 	private LastPrice;
 	    uint 	private CertificateDate;
@@ -11,7 +11,7 @@ pragma solidity ^0.7.6;
 	    bytes 	private DocHash;
 	    bytes 	private PhotoHash;
 
-		constructor(bytes32 _UID, bytes32 _Desc, uint _ObjectValue, uint _LastPrice, uint _CertificateDate, bytes memory _DocCID, bytes memory _PhotoCID, bytes memory _DocHash, bytes memory _PhotoHash) public {
+		constructor(bytes32 _UID, bytes memory _Desc, uint _ObjectValue, uint _LastPrice, uint _CertificateDate, bytes memory _DocCID, bytes memory _PhotoCID, bytes memory _DocHash, bytes memory _PhotoHash) public {
 	    	UID 			= _UID;
 	    	Desc 			= _Desc;
 	    	ObjectValue 	= _ObjectValue;
@@ -27,7 +27,7 @@ pragma solidity ^0.7.6;
 			return UID;
 			}
 
-	 	function getDesc() view public returns (bytes32) {
+	 	function getDesc() view public returns (bytes memory) {
 			return Desc;
 			}
 
@@ -96,7 +96,7 @@ pragma solidity ^0.7.6;
 			collectionLastPrice = 0;
 	      	} // constructor(bytes16 _collectionUIC, bytes16 _collectionName) public
 
-	   	function createObject(bytes32 _UID, bytes32 _Desc, uint _ObjectValue, uint _LastPrice, uint _CertificateDate, bytes memory _DocCID, bytes memory _PhotoCID, bytes memory _DocHash, bytes memory _PhotoHash) public {
+	   	function createObject(bytes32 _UID, bytes memory _Desc, uint _ObjectValue, uint _LastPrice, uint _CertificateDate, bytes memory _DocCID, bytes memory _PhotoCID, bytes memory _DocHash, bytes memory _PhotoHash) public {
 	   		// Create Object
 
 			Object o = new Object(_UID, _Desc, _ObjectValue, _LastPrice, _CertificateDate, _DocCID, _PhotoCID, _DocHash, _PhotoHash);
@@ -137,30 +137,18 @@ pragma solidity ^0.7.6;
 	      	return collectionName;
 			} // function getCollectionName() public view returns (bytes16)
 
-		function getObjectInfo(uint _index) public view returns (address, bytes32, bytes32, uint, uint, uint) {
-	      	Object myObject = objects[_index];
-         	
-         	return (address(myObject), myObject.getUID(), myObject.getDesc(), myObject.getObjectValue(), myObject.getLastPrice(), myObject.getCertificateDate());
-			} // function getObjectInfo(uint _index)
-
-		function getDocDetails(uint _index) public view returns (bytes memory, bytes memory) {
+		function getObjectInfo(uint _index) public view returns (address, bytes32, bytes memory, uint, uint, uint, bytes memory, bytes memory, bytes memory, bytes memory) {
 	      	Object myObject = objects[_index];
          	
          	// Get Document CID for IPFS location and Hash for authentication
 	      	bytes memory myDocCID  = myObject.getDocCID();
 	      	bytes memory myDocHash = myObject.getDocHash();
 
-         	return (myDocCID, myDocHash);
-			} // function getDocDetails(uint _index)
-
-		function getPhotoDetails(uint _index) public view returns (bytes memory, bytes memory) {
-	      	Object myObject = objects[_index];
-         	
          	// Get Photo CID for IPFS location and Hash for authentication
 	      	bytes memory myPhotoCID  = myObject.getPhotoCID();
 	      	bytes memory myPhotoHash = myObject.getPhotoHash();
 
-         	return (myPhotoCID, myPhotoHash);
-			} // function getPhotoDetails(uint _index)
-
+         	return (address(myObject), myObject.getUID(), myObject.getDesc(), myObject.getObjectValue(), myObject.getLastPrice(), myObject.getCertificateDate(), myDocCID, myDocHash, myPhotoCID, myPhotoHash);
+			} // function getObjectInfo(uint _index)
+	    
 		} // contract Object

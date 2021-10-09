@@ -2,14 +2,30 @@ var collectionABI = [
     {
         "inputs": [
             {
+                "internalType": "bytes16",
+                "name": "_collectionUID",
+                "type": "bytes16"
+            },
+            {
+                "internalType": "bytes16",
+                "name": "_collectionName",
+                "type": "bytes16"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "bytes32",
                 "name": "_UID",
                 "type": "bytes32"
             },
             {
-                "internalType": "bytes32",
+                "internalType": "bytes",
                 "name": "_Desc",
-                "type": "bytes32"
+                "type": "bytes"
             },
             {
                 "internalType": "uint256",
@@ -53,22 +69,6 @@ var collectionABI = [
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "bytes16",
-                "name": "_collectionUID",
-                "type": "bytes16"
-            },
-            {
-                "internalType": "bytes16",
-                "name": "_collectionName",
-                "type": "bytes16"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    {
         "inputs": [],
         "name": "getCollectionName",
         "outputs": [
@@ -89,30 +89,6 @@ var collectionABI = [
                 "internalType": "bytes16",
                 "name": "",
                 "type": "bytes16"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "_index",
-                "type": "uint256"
-            }
-        ],
-        "name": "getDocDetails",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "",
-                "type": "bytes"
-            },
-            {
-                "internalType": "bytes",
-                "name": "",
-                "type": "bytes"
             }
         ],
         "stateMutability": "view",
@@ -170,9 +146,9 @@ var collectionABI = [
                 "type": "bytes32"
             },
             {
-                "internalType": "bytes32",
+                "internalType": "bytes",
                 "name": "",
-                "type": "bytes32"
+                "type": "bytes"
             },
             {
                 "internalType": "uint256",
@@ -188,21 +164,17 @@ var collectionABI = [
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
+            },
             {
-                "internalType": "uint256",
-                "name": "_index",
-                "type": "uint256"
-            }
-        ],
-        "name": "getPhotoDetails",
-        "outputs": [
+                "internalType": "bytes",
+                "name": "",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "",
+                "type": "bytes"
+            },
             {
                 "internalType": "bytes",
                 "name": "",
