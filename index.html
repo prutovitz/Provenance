@@ -7,6 +7,7 @@
         <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
         <script language="javascript" type="text/javascript" src="collection_abi.js"></script>
         <script language="javascript" type="text/javascript" src="object_abi.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
         <link rel="stylesheet" type="text/css" href="main.css">
         <link rel="shortcut icon" href="">
@@ -16,13 +17,14 @@
     <table id="collectionTable" style="border: 0px; width:100%">
         <tr>
             <td class=nbbl style="width:10%">Collection Name</td> 
-            <td class=nb id="collectionList" style="width:12%"></td>
+            <td class=nb  id="collection" style="width:10%">First Collection</td>
+            <td class=nb  style="width:20%"></td>
             <td class=nbbl style="width:10%">ObjectValue</td>
-            <td class=bp id="objectValueBalance" style="width:12%; background-color: White"></td>
-            <td class=nbbl>Last Price</td>
-            <td class=bp id="lastPrice" style="background-color: White"></td>
-            <td class=nbbl># of Objects</td> 
-            <td id="numberObjects" class=b style="background-color: White"></td>
+            <td class=bp id="objectValueBalance" style="width:10%; background-color: White"></td>
+            <td class=nbbl style="width:10%">Last Price</td>
+            <td class=bp id="lastPrice" style="width:10%; background-color: White"></td>
+            <td class=nbbl style="width:10%"># of Objects</td> 
+            <td id="numberObjects" class=b style="width:10%; background-color: White"></td>
         </tr>
     </table>
 
@@ -30,20 +32,18 @@
 
     <div id="DisplayPortfolio" style="display:block">
 
-        <hr>
-
         <div id="objectsDiv" class="scrollit">
-            <table id="objectsTable" style="width:176%">
+            <table id="objectsTable" style="white-space: nowrap">
                 <tr>
-                    <td class="bb" style="width:5%">UID</td> 
-                    <td class=bb style="width:15%">Description</td>
-                    <td class=bb style="width:10%">Object Value</td>                        
-                    <td class=bb style="width:10%">Last Price</td>
-                    <td class=bb style="width:10%">Certificate Date</td>                    
-                    <td class=bb style="width:15%">Document CID</td>
-                    <td class=bb style="width:15%">Document Hash</td>
-                    <td class=bb style="width:15%">Photo CID</td>
-                    <td class=bb style="width:15%">Photo Hash</td>
+                    <td class=bb>Object UID</td> 
+                    <td class=bb>Description</td>
+                    <td class=bb style="text-align:right">Object Value</td>                        
+                    <td class=bb style="text-align:right">Last Price</td>
+                    <td class=bb>Certificate Date</td>                    
+                    <td class=bb>Document CID</td>
+                    <td class=bb>Document Hash</td>
+                    <td class=bb>Photo CID</td>
+                    <td class=bb>Photo Hash</td>
                 </tr>
             </table>
         </div>
@@ -78,10 +78,31 @@
                 <td class=nbbl>Photo Hash</td>
                 <td class=nbl><input id="photoHash" type="text"></td>
             </tr>
+        </table>
 
-        <hr class=adminDisplay>
+        <hr>
 
-    <img id="loader" src="waiting-icon-gif-20.jpg">
+        <table id="uploadIPFSTable" class=adminDisplay style="width:50%">
+            <tr>
+                <td class=nbl style="width:10%"><button id="uploadIPFSButton" onclick="uploadIPFSClick()">Open IPFS File</button></td>
+                <td class=nbbl style="width:10%">CID</td>
+                <td class=nbl style="width:30%"><input id="docIPFS" class=b type="text"></td>            
+            </tr>
+        </table>
+
+        <hr>
+
+        <table id="SHA256Table" class=adminDisplay style="width:100%">
+            <tr>
+                <td class=nbbl style="width:20%">Hash file selector</td>    
+                <td class=nbl style="width:30%"><input id="hashFile" type="file" accept=".pdf" onchange='hashFileClick(event)'></td>
+                <td class=nbbl style="width:10%">Hash</td>
+                <td class=nbl id="hashOutput" style="width:40%"></td>
+            </tr>
+        </table>
+
+
+        <img id="loader" src="waiting-icon-gif-20.jpg">
 
     <script>
 
@@ -91,22 +112,27 @@
     var collectionAddress;
     var myCollection;
 
-    var objectContract;
-    var objectAddress;
-    var myObject;
-
     var numberOfObjects = 0;
     var totalObjectValue = 0;
     var totalLastPrice = 0;
 
     function startApp() {
-        collectionAddress = '0xf71dcc329ca962006631c0B48F0a448B156D4470'
+// Rinkeby
+//        collectionAddress = '0xf71dcc329ca962006631c0B48F0a448B156D4470'
+//        myCollection = new web3js.eth.Contract(collectionABI, collectionAddress);
+// Fantom
+        collectionAddress = '0xf890A741c2AFddDdc59DaB8abc123bdA31D32fa7'
         myCollection = new web3js.eth.Contract(collectionABI, collectionAddress);
 
-//        objectAddress = '0xfFA0b7783AfdAb942c3fF1952922F23b05a8eF7a'
-//        myObject = new web3js.eth.Contract(objectABI, objectAddress);
-
         updateCollection();
+        }
+
+    function uploadIPFSClick() {
+
+        var htmlCID = "https://ipfs.io/ipfs/" + $("#docIPFS").val();
+        console.log("CID:",htmlCID);
+
+        window.open(htmlCID);
         }
 
     function formattedDate(fDate = new Date()){
@@ -151,16 +177,23 @@
     // Update Collection data
     function updateCollection() {
 
+        numberOfObjects = 0;
+        totalObjectValue = 0;
+        totalLastPrice = 0;
+
         let collectionCount = myCollection.methods.getNumberObjects().call()
             .then( function(val) {
-                numberOfObjects = val;
                 console.log("Count:",val);
                 
+                // Set the number of objects
+                numberOfObjects = val;
+                document.getElementById("numberObjects").innerHTML = numberOfObjects;
+        
                 var oTable = document.getElementById("objectsTable");
 
                 // Define len as the total number of rows in oTable
                 var len = oTable.rows.length;
-
+                
                 // Delete all rows apart from the header row 
                 if (len > 1)
                     for (var i=len-1;i>0;i--)
@@ -169,10 +202,13 @@
                         oTable.deleteRow(i);
                         }
                 
-                var headerCell = oTable.rows[0].cells[0]; 
-                $(headerCell).css({"textAlign":"left","paddingLeft":"1em"});
-                // Initialize number of Objects to 0
-                $(headerCell).html("Object UID (0)");
+                // Declare header variables
+                var UIDCell = oTable.rows[0].cells[0]; 
+                var ObjValCell = oTable.rows[0].cells[2];
+                var LastPriceCell = oTable.rows[0].cells[3];
+
+                // Set number of Objects to be the number of records in table
+                $(UIDCell).html("Object UID (" + numberOfObjects + ")");
 
                 // initialize portfolio totals
                 totalObjectValue = 0;
@@ -214,6 +250,7 @@
                         var cell9 = row.insertCell(8);
 
                         console.log("Len:",len1);
+                        console.log("Address:",object[0]);
 
                         // UID
                         $(cell1).html(web3.toAscii(object[1]));
@@ -222,20 +259,32 @@
                         console.log("UID:",object[1]);
     
                         // Description
-                        $(cell2).html(web3.toAscii(object[2]));
+                        $(cell2).html(web3.toAscii(object[2])).css({"textAlign":"right","paddingRight":"1em"});
                         $(cell2).css({"textAlign":"left","paddingLeft":"1em"});
 
                         // Obect Value
                         $(cell3).html(object[3]);
                         var objectValue = object[3]/1000000;
                         $(cell3).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(objectValue)).css({"textAlign":"right","paddingRight":"1em"});
-                        $(cell3).css({"textAlign":"left","paddingLeft":"1em"});
+
+                        // update totalObjectValue
+                        totalObjectValue += objectValue;
+                        $("#objectValueBalance").html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(totalObjectValue)).css({"textAlign":"right","paddingRight":"1em"});
+
+                        // Set Object Value header to be also show total
+                        $(ObjValCell).html("Object Value (" + totalObjectValue + ")");
 
                         // Last Price
                         $(cell4).html(object[4]);
                         var lastPrice = object[4]/1000000;
                         $(cell4).html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(lastPrice)).css({"textAlign":"right","paddingRight":"1em"});
-                        $(cell4).css({"textAlign":"left","paddingLeft":"1em"});
+
+                        // update totalLastPrice
+                        totalLastPrice += lastPrice;
+                        $("#lastPrice").html(Intl.NumberFormat('en-UK', {maximumFractionDigits: 0}).format(totalLastPrice)).css({"textAlign":"right","paddingRight":"1em"});
+
+                        // Set Last Price header to be also show total
+                        $(LastPriceCell).html("Last Price (" + totalLastPrice + ")");
 
                         // Certificate Date
                         var certificateDate = new Date(object[5]*1000);
@@ -300,6 +349,44 @@
         alert(T);
         }
 
+    function hashFileClick() {
+
+        var hash;
+        var files = document.getElementById('hashFile').files;
+
+        if (!files.length) {
+          alert('Please select a file!');
+          return;
+        }
+
+        var file = files[0];
+        var start = 0;
+        var stop = file.size - 1;
+
+        var reader = new FileReader();
+
+        var blob = file.slice(start, stop + 1);
+        reader.readAsArrayBuffer(blob);
+
+        // If we use onloadend, we need to check the readyState.
+        reader.onloadend = function(evt) {
+            if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+
+                var wordArray = CryptoJS.lib.WordArray.create(evt.target.result);
+                var hash = CryptoJS.SHA256(wordArray);
+
+                console.log("SHA256: " + hash);
+
+                document.getElementById("hashOutput").innerHTML = hash;          
+                }
+            };
+
+        reader.onerror = function() {
+            console.log(reader.error);
+            };
+
+    } // function hashFile() {
+
     window.addEventListener('load', function() {
 
         window.ethereum.enable();
@@ -311,8 +398,14 @@
         } else {
             // Handle the case where the user doesn't have Metamask installed
             // Probably show them a message prompting them to install Metamask
-            // set the provider you want from Web3.providers - Ropesten
-            web3js = new Web3.providers.HttpProvider("http://localhost:3000");
+            // set the provider you want from Web3.providers
+// Rinkeby
+//            web3js = new Web3.providers.HttpProvider("http://localhost:3000");
+// Ethereum
+//            web3js = new Web3.providers.HttpProvider("http://localhost:8545");
+// Fantom
+            web3js = new Web3.providers.HttpProvider("http://rpc.fantom.network/");
+
         }
 
         web3js.eth.defaultAccount = web3js.eth.accounts[0];
